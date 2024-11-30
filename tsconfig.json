@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+      "module": "ESNext",
+      "target": "ES6",
+      "outDir": "./dist",
+      "sourceMap": true
+    },
+    "include": ["src/**/*.ts", "interactive.ts"],
+    "exclude": ["node_modules", "dist"]
+  }
