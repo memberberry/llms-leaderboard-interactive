@@ -8,7 +8,7 @@
     "dev": "vite --force --debug",
     "lint": "eslint . --ext .ts,.js"
   },
-  "author": "",
+  "author": "Roman Schmidtke",
   "license": "ISC",
   "description": "",
   "dependencies": {
