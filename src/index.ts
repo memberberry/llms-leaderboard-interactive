@@ -13,32 +13,60 @@ import { AxesHelper } from 'three';
 import { createTextSprite } from './text-generation';
 import { initControls } from './keyboard-controls';
 import { SpriteMaterial } from 'three';
+import { loadDataFromAPI } from './load-data';
+import { Color } from 'three';
+import { Sprite } from 'three';
 
-const SCALEFACTOR = 0.1; 
+const SCALEFACTOR = 0.05; 
 const AXESLENGTH = 15;
+const BACKGROUND = new Color(0x000000)
 var axesVisible = true;
 
 const scene = new Scene();
 const camera = new PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+scene.background = BACKGROUND; // Light blue color
 
 // point camera at the origin
 camera.position.z = 50;
 camera.position.y = -50;
 camera.lookAt(new Vector3(0, 0, 0));
 
-const renderer = new WebGLRenderer();
+const renderer = new WebGLRenderer({ antialias: true });
 const axesHelper = new AxesHelper( AXESLENGTH );
 
 // Add text sprites for axis labels
-const labelX = createTextSprite('X', 'red', new Vector3(AXESLENGTH + 1, 0, 0));
-const labelY = createTextSprite('Y', 'green', new Vector3(0, AXESLENGTH + 1, 0));
-const labelZ = createTextSprite('Z', 'blue', new Vector3(0, 0, AXESLENGTH + 1));
+const labelX = createTextSprite('X', 'red', new Vector3(AXESLENGTH + 1, 0, 0), 1);
+const labelY = createTextSprite('Y', 'green', new Vector3(0, AXESLENGTH + 1, 0), 1);
+const labelZ = createTextSprite('Z', 'blue', new Vector3(0, 0, AXESLENGTH + 1), 1);
 
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
+const Table = {};
+let response = loadDataFromAPI();
+console.log("...loading data")
+response.then(res => res.json()).then(data => {
 
+    data = data.data;
+    console.log(data);
+    console.log("...data loaded")
+    data.forEach(x => {
+        Table[x[0].leaderboard] = x;
+    });
 
+    let z = 0;
+    for(let key in Table){
+        console.log(z);
+    
+
+        let text: Sprite = createTextSprite(key, 'white', new Vector3(0, 0, z), 3);
+        console.log(text);
+        scene.add(text);
+        
+        z += 10;
+    }
+
+}).catch(err => console.log(err));
 
 const geometry = new BoxGeometry( 10, 20, 10 ); 
 const material = new MeshBasicMaterial( {color: 0x00ff00} ); 
@@ -61,19 +89,16 @@ labelZ.renderOrder = 999;
 
 
 scene.add(grid);
-scene.add( cube );
-scene.add( plane );
+//scene.add( cube );
+//scene.add( plane );
 scene.add( axesHelper );
 scene.add(labelX, labelY, labelZ);
+
 
 function animate() {
 
     renderer.render( scene, camera );
     controls.update();
-
-    labelX.lookAt(camera.position);
-    labelY.lookAt(camera.position);
-    labelZ.lookAt(camera.position);
 
     const distanceX = camera.position.distanceTo(labelX.position);
     const distanceY = camera.position.distanceTo(labelY.position);
@@ -87,6 +112,7 @@ function animate() {
     labelX.visible      = axesVisible;
     labelY.visible      = axesVisible;
     labelZ.visible      = axesVisible;
+
 
 }
 
