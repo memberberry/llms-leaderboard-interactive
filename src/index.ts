@@ -1,4 +1,4 @@
-import { Vector3 } from 'three';
+import { Object3D, Vector3 } from 'three';
 import { LineBasicMaterial, MeshBasicMaterial } from 'three';
 import { BufferGeometry, BoxGeometry} from 'three';
 import { Line } from 'three';
@@ -28,7 +28,7 @@ scene.background = BACKGROUND; // Light blue color
 
 // point camera at the origin
 camera.position.z = 50;
-camera.position.y = -50;
+camera.position.y = 50;
 camera.lookAt(new Vector3(0, 0, 0));
 
 const renderer = new WebGLRenderer({ antialias: true });
@@ -42,6 +42,7 @@ const labelZ = createTextSprite('Z', 'blue', new Vector3(0, 0, AXESLENGTH + 1), 
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
+
 const Table = {};
 let response = loadDataFromAPI();
 console.log("...loading data")
@@ -50,22 +51,44 @@ response.then(res => res.json()).then(data => {
     data = data.data;
     console.log(data);
     console.log("...data loaded")
+
     data.forEach(x => {
         Table[x[0].leaderboard] = x;
     });
-
+    const labelSize = 3;
+    const graphicContainer = new Object3D();
+    const containerLabelZParent = new Object3D();
+    const offsetZ = 10 * labelSize / 4;
+    // Set Date Time labels
+    // position the text sprites half above and half below the origin
     let z = 0;
     for(let key in Table){
-        console.log(z);
-    
 
-        let text: Sprite = createTextSprite(key, 'white', new Vector3(0, 0, z), 3);
-        console.log(text);
-        scene.add(text);
-        
-        z += 10;
+        let text: Sprite = createTextSprite(key, 'white', new Vector3(0, 0, z), labelSize);
+        z += offsetZ;
+        containerLabelZParent.add(text);
     }
+    
+    graphicContainer.add(containerLabelZParent);
 
+    // Set Model Labels
+    const containerLabelXParent = new Object3D();
+    const offsetX = 15 * labelSize / 3;
+    let x = 0;
+    const modelLabels = Object.keys(Table[Object.keys(Table)[0]][0]);
+    for(let key in modelLabels){
+            
+            let text: Sprite = createTextSprite(modelLabels[key], 'white', new Vector3(x, 0, 0), labelSize);
+            containerLabelXParent.add(text);
+            x += offsetX;
+
+    }
+    containerLabelXParent.position.set(labelSize * 5, 0, 0);
+
+    graphicContainer.add(containerLabelXParent);
+    graphicContainer.position.set(-x/2, 0, -z/2);
+    scene.add(graphicContainer);
+    
 }).catch(err => console.log(err));
 
 const geometry = new BoxGeometry( 10, 20, 10 ); 
@@ -112,7 +135,6 @@ function animate() {
     labelX.visible      = axesVisible;
     labelY.visible      = axesVisible;
     labelZ.visible      = axesVisible;
-
 
 }
 
