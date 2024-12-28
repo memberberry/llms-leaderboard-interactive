@@ -34,7 +34,7 @@ export function createTextSprite(text: string, color: string, position: Vector3,
   canvas.height =  64 * size;
 
   const fontSize = Math.floor(canvas.height);  // Adjust 5 based on your needs
-  console.log("fontsize:", fontSize);
+
   context.font = `Bold ${fontSize}px Arial`; // Use calculated font size
 
   context.fillStyle = color;
@@ -47,7 +47,6 @@ export function createTextSprite(text: string, color: string, position: Vector3,
 
   texture.needsUpdate = true;
 
-  console.log("texture", texture);
   texture.needsUpdate = true;
 
   // Create a sprite material using the texture

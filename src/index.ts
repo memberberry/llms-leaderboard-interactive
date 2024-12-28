@@ -44,49 +44,71 @@ renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
 
 const Table = {};
+const models = new Set<string>();
 let response = loadDataFromAPI();
 console.log("...loading data")
 response.then(res => res.json()).then(data => {
 
     data = data.data;
     console.log(data);
-    console.log("...data loaded")
 
+    let longest = data.reduce((longest, current) => {
+        return current.length > longest.length ? current : longest;
+    }, []);
+
+    longest.map(x => x.model).forEach(model => {
+        if(model != null) models.add(model)
+    });
+    console.log(models);
     data.forEach(x => {
         Table[x[0].leaderboard] = x;
     });
     const labelSize = 3;
+
     const graphicContainer = new Object3D();
+    const containerLabelXParent = new Object3D();
+    const containerLabelYParent = new Object3D();
     const containerLabelZParent = new Object3D();
-    const offsetZ = 10 * labelSize / 4;
+
+    const offsetY = 10 * labelSize / 4;
     // Set Date Time labels
     // position the text sprites half above and half below the origin
-    let z = 0;
+    let y = 0;
     for(let key in Table){
 
-        let text: Sprite = createTextSprite(key, 'white', new Vector3(0, 0, z), labelSize);
-        z += offsetZ;
-        containerLabelZParent.add(text);
+        let text: Sprite = createTextSprite(key, 'white', new Vector3(0, y, 0), labelSize);
+        y += offsetY;
+        containerLabelYParent.add(text);
     }
     
-    graphicContainer.add(containerLabelZParent);
-
+    graphicContainer.add(containerLabelYParent);
+    containerLabelYParent.position.set(0, labelSize * 3, 0);
     // Set Model Labels
-    const containerLabelXParent = new Object3D();
     const offsetX = 15 * labelSize / 3;
     let x = 0;
-    const modelLabels = Object.keys(Table[Object.keys(Table)[0]][0]);
-    for(let key in modelLabels){
+    const dataLabels = Object.keys(Table[Object.keys(Table)[0]][0]).slice(1,);
+
+    for(let key in dataLabels){
             
-            let text: Sprite = createTextSprite(modelLabels[key], 'white', new Vector3(x, 0, 0), labelSize);
-            containerLabelXParent.add(text);
-            x += offsetX;
+        let text: Sprite = createTextSprite(dataLabels[key], 'white', new Vector3(x, 0, 0), labelSize);
+        containerLabelXParent.add(text);
+        x += offsetX;
 
     }
-    containerLabelXParent.position.set(labelSize * 5, 0, 0);
-
+    containerLabelXParent.position.set(labelSize * 10, 0, 0);
     graphicContainer.add(containerLabelXParent);
-    graphicContainer.position.set(-x/2, 0, -z/2);
+
+    const offsetZ = 5 * labelSize / 3;
+    let z = 0;
+    for(let model of models){
+        console.log("modelKey", model);
+        let text: Sprite = createTextSprite(model, 'white', new Vector3(0, 0, z), labelSize);
+        containerLabelZParent.add(text);
+        z += offsetZ;
+    }
+    containerLabelZParent.position.set(0,0, labelSize * 5);
+    graphicContainer.add(containerLabelZParent);
+    graphicContainer.position.set(-x/2, -y/2, -z/6);
     scene.add(graphicContainer);
     
 }).catch(err => console.log(err));
